@@ -1,0 +1,12 @@
+services:
+  app_epi:
+    build: .
+    container_name: sistema_controle_epi
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mapeia a PASTA do banco (e não um arquivo único): os dados e o journal do SQLite
+      # ficam salvos no host em ./dados mesmo que o container seja removido.
+      # A pasta é criada automaticamente pelo Docker se não existir.
+      - ./dados:/app/dados
+    restart: always

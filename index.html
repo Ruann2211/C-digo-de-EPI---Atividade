@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de EPI - SENAI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-light">
+
+    <div class="d-flex">
+        <!-- TELA BASE: Menu Lateral -->
+        <div class="bg-dark text-white p-3 min-vh-100" style="width: 260px;">
+            <h4 class="text-center py-2 border-bottom">Controle EPI</h4>
+            
+            <div class="d-flex align-items-center my-3 pb-3 border-bottom">
+                <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%236c757d'/%3E%3Ccircle cx='20' cy='15' r='7' fill='white'/%3E%3Cpath d='M6 36c2-9 26-9 28 0z' fill='white'/%3E%3C/svg%3E" width="40" height="40" class="rounded-circle me-2" alt="Foto Usuário">
+                <div>
+                    <strong class="d-block small">Técnico de Segurança</strong>
+                    <span class="badge bg-success">Online</span>
+                </div>
+            </div>
+
+            <div class="nav nav-pills flex-column mb-auto">
+                <button type="button" class="btn btn-dark text-start mb-1 active w-100" id="btn-colaboradores" onclick="mostrarTela('colaboradores')">Colaboradores</button>
+                <button type="button" class="btn btn-dark text-start mb-1 w-100" id="btn-equipamentos" onclick="mostrarTela('equipamentos')">Equipamentos</button>
+                <button type="button" class="btn btn-dark text-start mb-1 w-100" id="btn-emprestimos" onclick="mostrarTela('emprestimos')">Empréstimos</button>
+                <button type="button" class="btn btn-dark text-start mb-1 w-100" id="btn-relatorios" onclick="mostrarTela('relatorios')">Relatórios / Análise</button>
+            </div>
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="flex-grow-1 p-4">
+            <div id="alert-container"></div>
+
+            <!-- 1. COLABORADORES -->
+            <div id="tela-colaboradores" class="secao-tela">
+                <h2>Gerenciamento de Colaboradores</h2>
+                <div class="card p-3 my-3">
+                    <form id="form-colaborador" onsubmit="salvarColaborador(event)">
+                        <input type="hidden" id="colab-id">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <input type="text" id="colab-nome" class="form-control" placeholder="Nome do Colaborador" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="Apenas letras são permitidas" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" id="colab-cargo" class="form-control" placeholder="Cargo" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="Apenas letras são permitidas" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" id="colab-matricula" class="form-control" placeholder="Matrícula" inputmode="numeric" pattern="\d+" title="Apenas números são permitidos" required>
+                            </div>
+                            <div class="col-md-1"><button type="submit" class="btn btn-primary w-100">Salvar</button></div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="d-flex my-3">
+                    <input type="text" id="busca-colab" class="form-control me-2" placeholder="Pesquisar por nome..." oninput="carregarColaboradores()">
+                </div>
+
+                <table class="table table-striped bg-white rounded shadow-sm">
+                    <thead><tr><th>ID</th><th>Nome</th><th>Cargo</th><th>Matrícula</th><th>Ações</th></tr></thead>
+                    <tbody id="tabela-colaboradores"></tbody>
+                </table>
+            </div>
+
+            <!-- 2. EQUIPAMENTOS -->
+            <div id="tela-equipamentos" class="secao-tela d-none">
+                <h2>Gerenciamento de Equipamentos (EPIs)</h2>
+                <div class="card p-3 my-3">
+                    <form id="form-equipamento" onsubmit="salvarEquipamento(event)">
+                        <input type="hidden" id="eq-id">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <input type="text" id="eq-nome" class="form-control" placeholder="Nome do EPI" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="Apenas letras são permitidas" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" id="eq-tipo" class="form-control" placeholder="Tipo (ex: Proteção Cabeça)" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="Apenas letras são permitidas" required>
+                            </div>
+                            <div class="col-md-2"><input type="number" id="eq-quantidade" class="form-control" placeholder="Quantidade" min="1" required></div>
+                            <div class="col-md-2"><input type="date" id="eq-validade" class="form-control" required></div>
+                            <div class="col-md-2">
+                                <select id="eq-situacao" class="form-select">
+                                    <option value="Disponível">Disponível</option>
+                                    <option value="Indisponível">Indisponível</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Salvar Equipamento</button>
+                    </form>
+                </div>
+
+                <table class="table table-striped bg-white rounded shadow-sm">
+                    <thead><tr><th>ID</th><th>Nome</th><th>Tipo</th><th>Qtd</th><th>Validade</th><th>Situação</th><th>Ações</th></tr></thead>
+                    <tbody id="tabela-equipamentos"></tbody>
+                </table>
+            </div>
+
+            <!-- 3. EMPRÉSTIMOS -->
+            <div id="tela-emprestimos" class="secao-tela d-none">
+                <h2>Novo Empréstimo / Entrega de EPI</h2>
+                <div class="card p-3 my-3">
+                    <form id="form-emprestimo" onsubmit="salvarEmprestimo(event)">
+                        <input type="hidden" id="emp-id">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Colaborador</label>
+                                <select id="emp-colaborador" class="form-select" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Equipamento</label>
+                                <select id="emp-equipamento" class="form-select" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Data Empréstimo</label>
+                                <input type="datetime-local" id="emp-data-emprestimo" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Data Prevista Devolução</label>
+                                <input type="datetime-local" id="emp-data-prevista" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select id="emp-status" class="form-select" onchange="tratarMudancaStatus()" required>
+                                    <option value="Emprestado">Emprestado</option>
+                                    <option value="Devolvido">Devolvido</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 campo-devolucao d-none">
+                                <label class="form-label">Data Efetiva da Devolução</label>
+                                <input type="datetime-local" id="emp-data-devolucao" class="form-control">
+                            </div>
+                            <div class="col-md-12 campo-devolucao d-none">
+                                <label class="form-label">Observação na Devolução</label>
+                                <textarea id="emp-observacao" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success mt-3">Registrar / Atualizar Empréstimo</button>
+                        <button type="button" class="btn btn-secondary mt-3 ms-2" onclick="limparFormEmprestimo()">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 4. RELATÓRIOS -->
+            <div id="tela-relatorios" class="secao-tela d-none">
+                <h2>Relatórios e Histórico de Empréstimos</h2>
+                <div class="card p-3 my-3">
+                    <h5>Filtro Combinado (AND)</h5>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <select id="filtro-colaborador" class="form-select" onchange="carregarRelatorios()"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="filtro-equipamento" class="form-select" onchange="carregarRelatorios()"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="filtro-status" class="form-select" onchange="carregarRelatorios()">
+                                <option value="">-- Todos os Status --</option>
+                                <option value="Emprestado">Emprestado</option>
+                                <option value="Devolvido">Devolvido</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table table-bordered bg-white rounded shadow-sm">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Colaborador</th><th>Equipamento</th><th>Empréstimo</th><th>Prev. Devolução</th><th>Status</th><th>Devolução</th><th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-relatorios"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function mostrarTela(nomeTela) {
+            document.querySelectorAll('.secao-tela').forEach(el => el.classList.add('d-none'));
+            document.querySelectorAll('.nav .btn').forEach(btn => btn.classList.remove('active', 'btn-primary'));
+            
+            const telaAlvo = document.getElementById(`tela-${nomeTela}`);
+            if (telaAlvo) telaAlvo.classList.remove('d-none');
+
+            const btnAlvo = document.getElementById(`btn-${nomeTela}`);
+            if (btnAlvo) btnAlvo.classList.add('active');
+
+            if (nomeTela === 'colaboradores') carregarColaboradores();
+            if (nomeTela === 'equipamentos') carregarEquipamentos();
+            if (nomeTela === 'emprestimos') carregarOpcoesEmprestimo();
+            if (nomeTela === 'relatorios') { carregarOpcoesFiltros(); carregarRelatorios(); }
+        }
+
+        // Escapa texto antes de inserir em innerHTML (evita injeção de HTML/JS - XSS)
+        function esc(valor) {
+            return String(valor ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        // 'AAAA-MM-DD' -> 'DD/MM/AAAA' e 'AAAA-MM-DDTHH:MM' -> 'DD/MM/AAAA HH:MM'
+        function fmtData(valor) {
+            if (!valor) return '-';
+            const [data, hora] = String(valor).split('T');
+            const [a, m, d] = data.split('-');
+            if (!a || !m || !d) return valor;
+            return `${d}/${m}/${a}` + (hora ? ` ${hora}` : '');
+        }
+
+        function exibirAlerta(mensagem, tipo = 'success') {
+            const container = document.getElementById('alert-container');
+            container.innerHTML = `
+                <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                    ${esc(mensagem)}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        // --- COLABORADORES ---
+        async function carregarColaboradores() {
+            try {
+                const busca = document.getElementById('busca-colab').value;
+                const res = await fetch(`/api/colaboradores?nome=${encodeURIComponent(busca)}`);
+                const dados = await res.json();
+                const tbody = document.getElementById('tabela-colaboradores');
+                tbody.innerHTML = dados.map(c => `
+                    <tr>
+                        <td>${c.id}</td><td>${esc(c.nome)}</td><td>${esc(c.cargo)}</td><td>${esc(c.matricula)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editarColaborador(${esc(JSON.stringify(c))})">Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="excluirItem('/api/colaboradores', ${c.id}, carregarColaboradores)">Excluir</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function salvarColaborador(e) {
+            e.preventDefault();
+            const id = document.getElementById('colab-id').value;
+            const nome = document.getElementById('colab-nome').value.trim();
+            const cargo = document.getElementById('colab-cargo').value.trim();
+            const matricula = document.getElementById('colab-matricula').value.trim();
+
+            const regexLetras = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+            if (!regexLetras.test(nome) || !regexLetras.test(cargo)) {
+                exibirAlerta('Nome e cargo devem conter apenas letras!', 'warning');
+                return;
+            }
+
+            const regexNumeros = /^\d+$/;
+            if (!regexNumeros.test(matricula)) {
+                exibirAlerta('A matrícula deve conter apenas números!', 'warning');
+                return;
+            }
+
+            const body = { nome, cargo, matricula };
+            if (id) body.id = parseInt(id);
+
+            const method = id ? 'PUT' : 'POST';
+            const res = await fetch('/api/colaboradores', { 
+                method, 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(body) 
+            });
+
+            if (res.ok) {
+                exibirAlerta('Colaborador salvo com sucesso!');
+                document.getElementById('form-colaborador').reset();
+                document.getElementById('colab-id').value = '';
+                carregarColaboradores();
+            } else {
+                const erroJson = await res.json();
+                exibirAlerta(erroJson.erro || 'Erro ao salvar colaborador.', 'danger');
+            }
+        }
+
+        function editarColaborador(c) {
+            document.getElementById('colab-id').value = c.id;
+            document.getElementById('colab-nome').value = c.nome;
+            document.getElementById('colab-cargo').value = c.cargo;
+            document.getElementById('colab-matricula').value = c.matricula;
+        }
+
+        // --- EQUIPAMENTOS ---
+        async function carregarEquipamentos() {
+            try {
+                const res = await fetch('/api/equipamentos');
+                const dados = await res.json();
+                const tbody = document.getElementById('tabela-equipamentos');
+                tbody.innerHTML = dados.map(eq => `
+                    <tr>
+                        <td>${eq.id}</td><td>${esc(eq.nome)}</td><td>${esc(eq.tipo)}</td><td>${eq.quantidade}</td><td>${fmtData(eq.validade)}</td><td>${esc(eq.situacao)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editarEquipamento(${esc(JSON.stringify(eq))})">Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="excluirItem('/api/equipamentos', ${eq.id}, carregarEquipamentos)">Excluir</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function salvarEquipamento(e) {
+            e.preventDefault();
+            const id = document.getElementById('eq-id').value;
+            const nome = document.getElementById('eq-nome').value.trim();
+            const tipo = document.getElementById('eq-tipo').value.trim();
+            const quantidade = parseInt(document.getElementById('eq-quantidade').value);
+            const validade = document.getElementById('eq-validade').value;
+            const situacao = document.getElementById('eq-situacao').value;
+
+            const regexLetras = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+            if (!regexLetras.test(nome) || !regexLetras.test(tipo)) {
+                exibirAlerta('Nome do EPI e Tipo devem conter apenas letras!', 'warning');
+                return;
+            }
+
+            const body = { nome, tipo, quantidade, validade, situacao };
+            if (id) body.id = parseInt(id);
+
+            const method = id ? 'PUT' : 'POST';
+            const res = await fetch('/api/equipamentos', { 
+                method, 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(body) 
+            });
+
+            if (res.ok) {
+                exibirAlerta('Equipamento salvo com sucesso!');
+                document.getElementById('form-equipamento').reset();
+                document.getElementById('eq-id').value = '';
+                carregarEquipamentos();
+            } else {
+                const erroJson = await res.json();
+                exibirAlerta(erroJson.erro || 'Erro ao salvar equipamento.', 'danger');
+            }
+        }
+
+        function editarEquipamento(eq) {
+            document.getElementById('eq-id').value = eq.id;
+            document.getElementById('eq-nome').value = eq.nome;
+            document.getElementById('eq-tipo').value = eq.tipo;
+            document.getElementById('eq-quantidade').value = eq.quantidade;
+            document.getElementById('eq-validade').value = eq.validade;
+            document.getElementById('eq-situacao').value = eq.situacao;
+        }
+
+        // --- EMPRÉSTIMOS ---
+        async function carregarOpcoesEmprestimo() {
+            try {
+                const resC = await fetch('/api/colaboradores');
+                const colabs = await resC.json();
+                const resE = await fetch('/api/equipamentos');
+                const eqs = await resE.json();
+
+                // Preserva a seleção atual ao recarregar as opções (evita perder o valor durante a edição)
+                const selColab = document.getElementById('emp-colaborador');
+                const selEq = document.getElementById('emp-equipamento');
+                const valColab = selColab.value;
+                const valEq = selEq.value;
+
+                selColab.innerHTML = colabs.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+                selEq.innerHTML = eqs.map(e => `<option value="${e.id}">${esc(e.nome)}</option>`).join('');
+
+                if (valColab) selColab.value = valColab;
+                if (valEq) selEq.value = valEq;
+            } catch (err) { console.error(err); }
+        }
+
+        function tratarMudancaStatus() {
+            const status = document.getElementById('emp-status').value;
+            const camposDevolucao = document.querySelectorAll('.campo-devolucao');
+            const dataDevolucao = document.getElementById('emp-data-devolucao');
+            if (status === 'Devolvido') {
+                camposDevolucao.forEach(el => el.classList.remove('d-none'));
+                dataDevolucao.required = true;
+            } else {
+                camposDevolucao.forEach(el => el.classList.add('d-none'));
+                dataDevolucao.required = false;
+            }
+        }
+
+        async function salvarEmprestimo(e) {
+            e.preventDefault();
+            const id = document.getElementById('emp-id').value;
+            const eqId = parseInt(document.getElementById('emp-equipamento').value);
+            const dataPrevista = new Date(document.getElementById('emp-data-prevista').value);
+            const agora = new Date();
+            const statusSelecionado = document.getElementById('emp-status').value;
+
+            if (!id && statusSelecionado === 'Emprestado' && dataPrevista <= agora) {
+                exibirAlerta('A data prevista para devolução deve ser posterior à data e hora atuais!', 'warning');
+                return;
+            }
+
+            // Validação local de estoque (o servidor repete a verificação)
+            if (!id && statusSelecionado === 'Emprestado') {
+                try {
+                    const resEq = await fetch('/api/equipamentos');
+                    const equipamentos = await resEq.json();
+                    const eqSelecionado = equipamentos.find(eq => eq.id === eqId);
+
+                    const resEmp = await fetch(`/api/emprestimos?equipamento_id=${eqId}`);
+                    const emprestimosExistentes = await resEmp.json();
+                    
+                    const emprestadosAtivos = emprestimosExistentes.filter(emp => emp.status === 'Emprestado').length;
+
+                    if (eqSelecionado && emprestadosAtivos >= eqSelecionado.quantidade) {
+                        exibirAlerta(`Estoque esgotado! O EPI "${eqSelecionado.nome}" possui apenas ${eqSelecionado.quantidade} unidade(s) e todas já estão emprestadas.`, 'warning');
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Erro ao validar estoque:", err);
+                }
+            }
+
+            const body = {
+                colaborador_id: parseInt(document.getElementById('emp-colaborador').value),
+                equipamento_id: eqId,
+                data_emprestimo: document.getElementById('emp-data-emprestimo').value,
+                data_prevista: document.getElementById('emp-data-prevista').value,
+                status: document.getElementById('emp-status').value,
+                data_devolucao: document.getElementById('emp-data-devolucao').value,
+                observacao: document.getElementById('emp-observacao').value
+            };
+
+            if (id) body.id = parseInt(id);
+
+            const method = id ? 'PUT' : 'POST';
+            const res = await fetch('/api/emprestimos', { 
+                method, 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(body) 
+            });
+
+            if (res.ok) {
+                exibirAlerta('Empréstimo registrado/atualizado com sucesso!');
+                limparFormEmprestimo();
+                mostrarTela('relatorios');
+            } else {
+                const erroJson = await res.json();
+                exibirAlerta(erroJson.erro || 'Erro ao registrar empréstimo.', 'danger');
+            }
+        }
+
+        async function editarEmprestimo(emp) {
+            mostrarTela('emprestimos');
+            await carregarOpcoesEmprestimo();   // garante que as opções dos selects já existem
+            document.getElementById('emp-id').value = emp.id;
+            
+            document.getElementById('emp-colaborador').value = emp.colaborador_id;
+            document.getElementById('emp-colaborador').disabled = true;
+
+            document.getElementById('emp-equipamento').value = emp.equipamento_id;
+            document.getElementById('emp-equipamento').disabled = true;
+
+            document.getElementById('emp-data-emprestimo').value = emp.data_emprestimo;
+            document.getElementById('emp-data-emprestimo').disabled = true;
+
+            document.getElementById('emp-data-prevista').value = emp.data_prevista;
+            document.getElementById('emp-data-prevista').disabled = true;
+
+            document.getElementById('emp-status').value = emp.status;
+            document.getElementById('emp-data-devolucao').value = emp.data_devolucao || '';
+            document.getElementById('emp-observacao').value = emp.observacao || '';
+            tratarMudancaStatus();
+        }
+
+        function limparFormEmprestimo() {
+            document.getElementById('form-emprestimo').reset();
+            document.getElementById('emp-id').value = '';
+            
+            document.getElementById('emp-colaborador').disabled = false;
+            document.getElementById('emp-equipamento').disabled = false;
+            document.getElementById('emp-data-emprestimo').disabled = false;
+            document.getElementById('emp-data-prevista').disabled = false;
+
+            tratarMudancaStatus();
+        }
+
+        // --- RELATÓRIOS ---
+        async function carregarOpcoesFiltros() {
+            try {
+                const resC = await fetch('/api/colaboradores');
+                const colabs = await resC.json();
+                document.getElementById('filtro-colaborador').innerHTML = '<option value="">-- Todos os Colaboradores --</option>' +
+                    colabs.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+
+                const resE = await fetch('/api/equipamentos');
+                const eqs = await resE.json();
+                document.getElementById('filtro-equipamento').innerHTML = '<option value="">-- Todos os Equipamentos --</option>' +
+                    eqs.map(e => `<option value="${e.id}">${esc(e.nome)}</option>`).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function carregarRelatorios() {
+            try {
+                const colabId = document.getElementById('filtro-colaborador').value;
+                const eqId = document.getElementById('filtro-equipamento').value;
+                const status = document.getElementById('filtro-status').value;
+
+                const url = `/api/emprestimos?colaborador_id=${colabId}&equipamento_id=${eqId}&status=${status}`;
+                const res = await fetch(url);
+                const dados = await res.json();
+
+                const tbody = document.getElementById('tabela-relatorios');
+                tbody.innerHTML = dados.map(e => `
+                    <tr>
+                        <td>${e.id}</td><td>${esc(e.colaborador_nome)}</td><td>${esc(e.equipamento_nome)}</td>
+                        <td>${fmtData(e.data_emprestimo)}</td><td>${fmtData(e.data_prevista)}</td>
+                        <td><span class="badge ${e.status === 'Emprestado' ? 'bg-warning text-dark' : 'bg-success'}">${esc(e.status)}</span></td>
+                        <td>${fmtData(e.data_devolucao)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editarEmprestimo(${esc(JSON.stringify(e))})">Editar Status</button>
+                            <button class="btn btn-sm btn-danger" onclick="excluirItem('/api/emprestimos', ${e.id}, carregarRelatorios)">Excluir</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function excluirItem(endpoint, id, callback) {
+            if (confirm("Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.")) {
+                const res = await fetch(`${endpoint}?id=${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    exibirAlerta('Excluído com sucesso!');
+                    callback();
+                } else {
+                    let msg = 'Erro ao excluir.';
+                    try { msg = (await res.json()).erro || msg; } catch (_) {}
+                    exibirAlerta(msg, 'danger');
+                }
+            }
+        }
+
+        carregarColaboradores();
+    </script>
+</body>
+</html>
